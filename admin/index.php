@@ -1,28 +1,40 @@
+
+
 <?php
 session_start();
 error_reporting(0);
 include("dbconnection.php");
-if(isset($_POST['login']))
-{
-$ret=mysqli_query($con,"SELECT * FROM admin WHERE name='".$_POST['email']."' and password='".$_POST['password']."'");
-$num=mysqli_fetch_array($ret);
-if($num>0)
-{
-$extra="home.php";
-$_SESSION['alogin']=$_POST['email'];
-$_SESSION['id']=$num['id'];
-echo "<script>window.location.href='".$extra."'</script>";
-exit();
-}
-else
-{
-$_SESSION['action1']="*Invalid username or password";
-$extra="index.php";
+session_start();
+error_reporting(0);
+include("dbconnection.php");
 
-echo "<script>window.location.href='".$extra."'</script>";
-exit();
-}
-}
+if (isset($_POST['login'])) {
+
+    $ret = mysqli_prepare($con, "SELECT * FROM admin WHERE name = ? AND password = ?");
+
+    $email    = $_POST['email'];
+    $password = $_POST['password'];
+    mysqli_stmt_bind_param($ret, "ss", $email, $password);
+    mysqli_stmt_execute($ret);
+
+    $result = mysqli_stmt_get_result($ret);
+    $num    = mysqli_fetch_array($result);
+
+    if ($num) {
+        $extra = "home.php";
+        $_SESSION['alogin'] = $email;
+        $_SESSION['id']     = $num['id'];
+        echo "<script>window.location.href='$extra'</script>";
+        exit();
+    } else {
+        $_SESSION['action1'] = "*Invalid username or password";
+        $extra = "index.php";
+        echo "<script>window.location.href='$extra'</script>";
+        exit();
+    }
+
+    mysqli_stmt_close($ret);
+}   
 ?>
 <!DOCTYPE html>
 <html>
